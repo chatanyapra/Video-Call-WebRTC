@@ -4,12 +4,15 @@ import App from "./App.jsx";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { SocketContextProvider } from "./socketContext/SocketContext.jsx";
+import { PeerProvider } from "./socketContext/WebRtcPeerContext.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <SocketContextProvider>
-        <App />
+        <PeerProvider>
+          <App />
+        </PeerProvider>
       </SocketContextProvider>
     </BrowserRouter>
   </React.StrictMode>
