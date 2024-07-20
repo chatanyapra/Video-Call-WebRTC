@@ -1,35 +1,58 @@
-import React, {useState, useEffect, useCallback} from "react";
-import { useSocketContext } from "../socketContext/SocketContext";
-import {useNavigate} from "react-router-dom";
+import React, { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSocket } from "../socketContext/SocketContext";
 
 const Home = () => {
-  const {socket} = useSocketContext();
-  const [email, setEmail] = useState('');
-  const [roomNo, setRoomNo] = useState('');
-  const navigate = useNavigate();
-  // submit room----------
-  const handleJoinRoom = (event) => {
-    event.preventDefault();
-    socket.emit("join-room",{roomId: roomNo, emailId: email});
-  }
+  const [email, setEmail] = useState("");
+  const [room, setRoom] = useState("");
 
-  // room joined by user--------
-  const handleJoinedRoom = useCallback(({roomId}) => {
-    navigate(`/room/${roomId}`);
-  }, [navigate]);
+  const socket = useSocket();
+  const navigate = useNavigate();
+
+  const handleSubmitForm = useCallback(
+    (e) => {
+      e.preventDefault();
+      socket.emit("room:join", { email, room });
+    },
+    [email, room, socket]
+  );
+
+  const handleJoinRoom = useCallback(
+    (data) => {
+      const { email, room } = data;
+      navigate(`/room/${room}`);
+    },
+    [navigate]
+  );
+
   useEffect(() => {
-    socket.on("joined-room", handleJoinedRoom);
+    socket.on("room:join", handleJoinRoom);
     return () => {
-      socket.off("joined-room", handleJoinedRoom);
-    }
-  }, [socket,handleJoinedRoom])
+      socket.off("room:join", handleJoinRoom);
+    };
+  }, [socket, handleJoinRoom]);
+
   return (
     <div className="home-container">
-      <h1>Home</h1>
-      <form className="form-container" onSubmit={handleJoinRoom}>
-        <input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="Enter email" />
-        <input value={roomNo} onChange={e => setRoomNo(e.target.value)} type="text" placeholder="Enter Room Code" />
-        <button type="submit">Enter Room</button>
+      <h1>Home Page</h1>
+      <form onSubmit={handleSubmitForm} className="form-container">
+        <label htmlFor="email">Email ID</label>
+        <input
+          type="email"
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <br />
+        <label htmlFor="room">Room Number</label>
+        <input
+          type="text"
+          id="room"
+          value={room}
+          onChange={(e) => setRoom(e.target.value)}
+        />
+        <br />
+        <button>Join</button>
       </form>
     </div>
   );
